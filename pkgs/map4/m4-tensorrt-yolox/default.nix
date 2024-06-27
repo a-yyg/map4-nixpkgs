@@ -15,8 +15,6 @@
 , cudatoolkit
 , builtin-interfaces
 , sensor-msgs
-, git
-, git-lfs
 }:
 buildRosPackage rec {
   name = "m4-tensorrt-yolox";
@@ -28,8 +26,10 @@ buildRosPackage rec {
     rev = "39d262f02f7a10db1dcec5b0f8fcbc62f38a58b9";
   };
 
-  postFetch = ''
-    git lfs pull
+  # Allow the user to specify the model and label paths
+  prePatch = ''
+    sed -i 's|let name="label_path" value=|arg name="label_path" default=|' launch/tensorrt_launch.xml
+    sed -i 's|let name="model_path" value=|arg name="model_path" default=|' launch/tensorrt_launch.xml
   '';
 
   buildType = "ament_cmake";
@@ -48,7 +48,7 @@ buildRosPackage rec {
     tensorrt-common
     cudatoolkit
   ];
-  nativeBuildInputs = buildInputs ++ [ git git-lfs ];
+  nativeBuildInputs = buildInputs;
   checkInputs = [ ament-lint-common ];
   propagatedBuildInputs = [
     builtin-interfaces

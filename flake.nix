@@ -100,17 +100,26 @@
         tensorrt-cmake-module;
       inherit (jetsonPkgs.nvidia-jetpack.cudaPackages) tensorrt cudnn;
     };
+    # ros2-ipcamera = pcPkgs.rosPackages.humble.callPackage
+    #   ./pkgs/ros2-ipcamera {}; # ({} // pcPkgs.rosPackages.humble);
+    video-receiver = pcPkgs.rosPackages.humble.callPackage ./pkgs/analogdevicesinc/video-receiver {};
   in
   rec {
+    # packages.x86_64-linux.ros2-ipcamera = ros2-ipcamera;
+    packages.x86_64-linux.video-receiver = video-receiver;
     packages.x86_64-linux.m4-tensorrt-yolox-pc = map4Pc.m4-tensorrt-yolox;
     packages.x86_64-linux.ros2-pc = pcPkgs.rosPackages.humble.buildROSWorkspace {
       name = "m4-tensorrt-yolox";
       devPackages = {
-        inherit (packages.x86_64-linux) m4-tensorrt-yolox-pc;
+        inherit (packages.x86_64-linux) m4-tensorrt-yolox-pc ros2-ipcamera;
       };
       prebuiltPackages = {
         inherit (pcPkgs.rosPackages.humble)
-          rviz2 ros2bag;
+          rviz2 ros2bag image-transport compressed-image-transport;
+        inherit (map4Pc.tier4-autoware-msgs)
+          tier4-perception-msgs;
+        # inherit (map4Pc.autoware-auto-msgs)
+        #   autoware-auto-perception-msgs;
       };
     };
     packages.aarch64-linux.m4-tensorrt-yolox-jetson = map4Jetson.m4-tensorrt-yolox;
@@ -123,6 +132,12 @@
         inherit (jetsonPkgs.rosPackages.humble)
           rviz2 ros2bag;
       };
+    };
+
+    devShells.x86_64-linux.default = pcPkgs.mkShell {
+      buildInputs = with pcPkgs; [
+        superflore
+      ];
     };
   };
 }

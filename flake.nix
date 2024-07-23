@@ -102,11 +102,12 @@
     };
     # ros2-ipcamera = pcPkgs.rosPackages.humble.callPackage
     #   ./pkgs/ros2-ipcamera {}; # ({} // pcPkgs.rosPackages.humble);
-    video-receiver = pcPkgs.rosPackages.humble.callPackage ./pkgs/analogdevicesinc/video-receiver {};
+    video-receiver = pkgs: pkgs.rosPackages.humble.callPackage ./pkgs/analogdevicesinc/video-receiver {};
   in
   rec {
     # packages.x86_64-linux.ros2-ipcamera = ros2-ipcamera;
-    packages.x86_64-linux.video-receiver = video-receiver;
+    packages.x86_64-linux.video-receiver = video-receiver pcPkgs;
+    packages.aarch64-linux.video-receiver = video-receiver jetsonPkgs;
     packages.x86_64-linux.m4-tensorrt-yolox-pc = map4Pc.m4-tensorrt-yolox;
     packages.x86_64-linux.ros2-pc = pcPkgs.rosPackages.humble.buildROSWorkspace {
       name = "m4-tensorrt-yolox";
@@ -126,7 +127,8 @@
     packages.aarch64-linux.ros2-jetson = jetsonPkgs.rosPackages.humble.buildROSWorkspace {
       name = "m4-tensorrt-yolox";
       devPackages = {
-        inherit (packages.aarch64-linux) m4-tensorrt-yolox-jetson;
+        # inherit (packages.aarch64-linux) m4-tensorrt-yolox-jetson;
+        inherit (packages.aarch64-linux) video-receiver;
       };
       prebuiltPackages = {
         inherit (jetsonPkgs.rosPackages.humble)
